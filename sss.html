@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>single serving site</title>
+
+
+<!-- LÄNKAR TYPSNITT -->
+    <link rel="stylesheet" href="https://use.typekit.net/byi3yyb.css">
+  
+
+<style>
+
+
+body {
+  background: #dbdbdb;
+  font-family: "neue-haas-grotesk-display", sans-serif;
+  font-style: normal;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  margin: 0;
+  color: #002ff2;
+}
+
+.loader {
+  width: 96px;
+  height: 96px;
+  border: 6px solid #002ff2;
+  border-bottom-color: transparent;
+  border-radius: 50%;
+  display: inline-block;
+  position: relative;
+  box-sizing: border-box;
+  animation: rotation 1s linear infinite;
+  
+
+}
+.loader::after {
+  content: '';  
+  position: absolute;
+  box-sizing: border-box;
+  left: 40px;
+  top: 62px;
+  border: 20px solid transparent;
+  border-right-color: #002ff2;
+  transform: rotate(-40deg);
+}
+
+@keyframes rotation {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+} 
+
+/* Modal container */
+.modal-container {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;
+}
+
+/* Själva modalen */
+.modal {
+  background: #f4ff1d;
+  border: 2px solid black;
+  border-top: 35px solid #002ff2;
+  width: 500px;
+  max-width: 90%;
+  padding: 30px 50px;
+  position: absolute; /* viktigt för drag */
+  text-align: center;
+  pointer-events: auto;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  font-size: 20px;
+  cursor: grab;
+}
+
+  
+
+
+.modal h1 {
+  font-size: 55px;
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
+
+.modal p{
+  font-size: 22px;
+  font-weight: 400;
+  
+}
+.cursor-trail {
+  position: fixed;
+  pointer-events: none;
+  color: #f7144b;      /* röd text */
+  font-weight: bold;
+  font-size: 41px;
+  z-index: 9999;
+  opacity: 1;
+  transition: opacity 0.7s ease-out; /* längre fade för tydligare text */
+  transform: translate(-50%, -50%);
+  white-space: nowrap;
+}
+
+
+
+
+/* Stäng-knapp */
+.btn-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: black;
+  color: white;
+  border: black solid;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 18px;
+  
+}
+
+/* Active drag */
+.modal.dragging {
+  opacity: 0.9;
+  cursor: grabbing;
+}
+
+
+.ripple {
+  position: fixed;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  pointer-events: none;
+  background: rgba(0, 47, 242, 0.5); /* #002ff2 */
+  box-shadow: 
+    0 0 20px rgba(0, 47, 242, 0.7),
+    0 0 30px rgba(0, 47, 242, 0.4);
+  transform: translate(-50%, -50%);
+  animation: ripple 1s ease-out forwards;
+  filter: blur(6px);
+  z-index: 9999;
+}
+
+
+@keyframes ripple {
+  from {
+    transform: translate(-50%, -50%) scale(0.2);
+    opacity: 1;
+  }
+  to {
+    transform: translate(-50%, -50%) scale(1.5);
+    opacity: 0;
+  }
+}
+
+</style>
+</head>
+<body>
+
+<div id="modal-root"></div>
+<div class="loader" id="loader"></div>
+
+<script>
+
+setTimeout(() => {
+  const loader = document.getElementById('loader');
+  if (loader) loader.remove();
+}, 2900);
+
+
+const modalColors = ['#f4ff1d', '#999999', '#f7144b'];
+
+const modalRoot = document.getElementById('modal-root');
+
+let modalCount = 0;
+
+const modalTexts = [
+  {
+    title: "ERROR!",
+    text: "Something went wrong. Press cancel to quit."
+  },
+  {
+    title: "ERROR!",
+    text: "Please try again later. Press cancel to quit."
+  },
+  {
+    title: "ERROR!",
+    text: "An internal error occured during your request. <br> Press cancel to quit."
+  }
+];
+
+
+
+// Skapa en ny modal
+function createModal() {
+  modalCount++;
+  
+
+
+  // Alla tidigare modaler blir oklickbara
+  document.querySelectorAll('.modal-container').forEach(m => {
+    m.style.pointerEvents = 'none';
+  });
+
+  // Container
+  const container = document.createElement('div');
+  container.className = 'modal-container';
+  container.style.zIndex = 10 + modalCount;
+
+  // Modal
+  const modal = document.createElement('div');
+  modal.className = 'modal';
+  modal.style.left = `${100 + modalCount*30}px`;
+  modal.style.top = `${100 + modalCount*20}px`;
+  
+  const randomColor =
+  modalColors[Math.floor(Math.random() * modalColors.length)];
+
+modal.style.background = randomColor;
+
+
+  
+  const randomContent = modalTexts[
+  Math.floor(Math.random() * modalTexts.length)
+];
+
+
+  modal.innerHTML = `
+  <h1>${randomContent.title}</h1>
+  <p>${randomContent.text}</p>
+  <button class="btn-close">Cancel</button>
+`;
+
+
+  // Klick på stäng → skapa nästa modal
+  modal.querySelector('.btn-close').addEventListener('click', (e) => {
+    e.stopPropagation(); // hindra drag
+    createModal();
+  });
+
+  // Lägg modal i container
+  container.appendChild(modal);
+  modalRoot.appendChild(container);
+
+  // Gör dragbart
+  makeDraggable(modal);
+}
+
+
+// DRAG FUNKTION
+function makeDraggable(el) {
+  let offsetX = 0, offsetY = 0;
+  let isDragging = false;
+
+  el.addEventListener('mousedown', (e) => {
+    if(e.target.classList.contains('btn-close')) return; // ej drag på knapp
+    isDragging = true;
+    el.classList.add('dragging');
+    offsetX = e.clientX - el.getBoundingClientRect().left;
+    offsetY = e.clientY - el.getBoundingClientRect().top;
+    el.style.zIndex = 1000; // dra längst fram
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+    el.style.left = (e.clientX - offsetX) + 'px';
+    el.style.top = (e.clientY - offsetY) + 'px';
+  });
+
+  document.addEventListener('mouseup', () => {
+    if(isDragging) {
+      isDragging = false;
+      el.classList.remove('dragging');
+    }
+  });
+}
+
+/* document.addEventListener('mousemove', (e) => {
+  const ripple = document.createElement('div');
+  ripple.className = 'ripple';
+  ripple.style.left = e.clientX + 'px';
+  ripple.style.top = e.clientY + 'px';
+
+  document.body.appendChild(ripple);
+
+  setTimeout(() => {
+    ripple.remove();
+  }, 1000);
+});
+*/
+
+setTimeout(() => {
+  createModal();
+}, 3000); // 3000 ms = 3 sekunder
+
+
+
+let lastTrailTime = 0; // för att skapa glesare trail
+const trailInterval = 50; // ms mellan varje ord (högre värde = glesare)
+
+document.addEventListener('mousemove', e => {
+  const now = Date.now();
+  if (now - lastTrailTime < trailInterval) return; // hoppa om det är för tätt
+  lastTrailTime = now;
+
+  const trail = document.createElement('div');
+  trail.className = 'cursor-trail';
+  trail.innerText = '404';
+
+  // Placera mitt på musen
+  trail.style.left = e.clientX + 'px';
+  trail.style.top = e.clientY + 'px';
+
+  document.body.appendChild(trail);
+
+  // Starta fade
+  setTimeout(() => {
+    trail.style.opacity = 0;
+  }, 20);
+
+  // Ta bort trailen efter fade är klar
+  setTimeout(() => trail.remove(), 1020); // matchar 1s transition
+});
+
+
+
+
+
+
+
+
+</script>
+
+
+
+
+
+
+</body>
+</html>
