@@ -173,6 +173,14 @@ body {
 
 <script>
 
+
+const cancelSound = new Audio(
+  "https://livkarlsson.github.io/error-ljud/"
+);
+cancelSound.preload = "auto";
+
+    
+
 setTimeout(() => {
   const loader = document.getElementById('loader');
   if (loader) loader.remove();
@@ -243,11 +251,14 @@ modal.style.background = randomColor;
 `;
 
 
-  // Klick på stäng → skapa nästa modal
   modal.querySelector('.btn-close').addEventListener('click', (e) => {
-    e.stopPropagation(); // hindra drag
-    createModal();
-  });
+  e.stopPropagation();
+
+  cancelSound.currentTime = 0;
+  cancelSound.play();
+
+  createModal();
+});
 
   // Lägg modal i container
   container.appendChild(modal);
