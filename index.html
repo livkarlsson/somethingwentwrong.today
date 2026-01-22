@@ -179,6 +179,11 @@ const cancelSound = new Audio(
 );
 cancelSound.preload = "auto";
 
+    document.addEventListener('click', () => {
+  cancelSound.currentTime = 0;
+  cancelSound.play().catch(() => {});
+}, { once: true });
+
     
 
 setTimeout(() => {
@@ -211,9 +216,13 @@ const modalTexts = [
 
 
 // Skapa en ny modal
+
 function createModal() {
   modalCount++;
-  
+
+  cancelSound.currentTime = 0;
+  cancelSound.play().catch(() => {});
+
 
 
   // Alla tidigare modaler blir oklickbara
