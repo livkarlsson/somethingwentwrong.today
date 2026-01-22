@@ -1,4 +1,4 @@
-ion<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="sv">
 <head>
 <meta charset="UTF-8">
@@ -171,109 +171,124 @@ body {
 <div id="modal-root"></div>
 <div class="loader" id="loader"></div>
 
-<script>
-/* =========================
-   USER INTERACTION FLAG
-========================= */
-let userInteracted = false;
 
-document.addEventListener('click', () => {
-  userInteracted = true;
+<script>
+const cancelSound = new Audio(
+  "https://somethingwentwrong.today/Windows_XP_Error_Sound.mp3"
+);
+cancelSound.preload = "auto";
+
+    document.addEventListener('click', () => {
+  cancelSound.currentTime = 0;
+  cancelSound.play().catch(() => {});
 }, { once: true });
 
-/* =========================
-   SOUND
-========================= */
-function playCancelSound() {
-  if (!userInteracted) return; // 🔒 blockera ljud innan klick
+    
 
-  const sound = new Audio(
-    "https://somethingwentwrong.today/Windows_XP_Error_Sound.mp3"
-  );
-  sound.play();
-}
-
-/* =========================
-   LOADER
-========================= */
 setTimeout(() => {
   const loader = document.getElementById('loader');
   if (loader) loader.remove();
 }, 2900);
 
-/* =========================
-   MODAL DATA
-========================= */
+
 const modalColors = ['#f4ff1d', '#999999', '#f7144b'];
+
 const modalRoot = document.getElementById('modal-root');
+
 let modalCount = 0;
 
 const modalTexts = [
-  { title: "ERROR!", text: "Something went wrong. Press cancel to quit." },
-  { title: "ERROR!", text: "Please try again later. Press cancel to quit." },
-  { title: "ERROR!", text: "An internal error occured during your request. <br> Press cancel to quit." }
+  {
+    title: "ERROR!",
+    text: "Something went wrong. Press cancel to quit."
+  },
+  {
+    title: "ERROR!",
+    text: "Please try again later. Press cancel to quit."
+  },
+  {
+    title: "ERROR!",
+    text: "An internal error occured during your request. <br> Press cancel to quit."
+  }
 ];
 
-/* =========================
-   CREATE MODAL
-========================= */
+
+
+// Skapa en ny modal
+
 function createModal() {
   modalCount++;
 
-  // 🔊 ljud endast om användaren interagerat
-  playCancelSound();
+  cancelSound.currentTime = 0;
+  cancelSound.play().catch(() => {});
 
+
+
+  // Alla tidigare modaler blir oklickbara
   document.querySelectorAll('.modal-container').forEach(m => {
     m.style.pointerEvents = 'none';
   });
 
+  // Container
   const container = document.createElement('div');
   container.className = 'modal-container';
   container.style.zIndex = 10 + modalCount;
 
+  // Modal
   const modal = document.createElement('div');
   modal.className = 'modal';
-  modal.style.left = `${100 + modalCount * 30}px`;
-  modal.style.top = `${100 + modalCount * 20}px`;
+  modal.style.left = `${100 + modalCount*30}px`;
+  modal.style.top = `${100 + modalCount*20}px`;
+  
+  const randomColor =
+  modalColors[Math.floor(Math.random() * modalColors.length)];
 
-  modal.style.background =
-    modalColors[Math.floor(Math.random() * modalColors.length)];
+modal.style.background = randomColor;
 
-  const content =
-    modalTexts[Math.floor(Math.random() * modalTexts.length)];
+
+  
+  const randomContent = modalTexts[
+  Math.floor(Math.random() * modalTexts.length)
+];
+
 
   modal.innerHTML = `
-    <h1>${content.title}</h1>
-    <p>${content.text}</p>
-    <button class="btn-close">Cancel</button>
-  `;
+  <h1>${randomContent.title}</h1>
+  <p>${randomContent.text}</p>
+  <button class="btn-close">Cancel</button>
+`;
+
 
   modal.querySelector('.btn-close').addEventListener('click', (e) => {
-    e.stopPropagation();
-    playCancelSound();
-    createModal();
-  });
+  e.stopPropagation();
 
+  cancelSound.currentTime = 0;
+  cancelSound.play();
+
+  createModal();
+});
+
+  // Lägg modal i container
   container.appendChild(modal);
   modalRoot.appendChild(container);
 
+  // Gör dragbart
   makeDraggable(modal);
 }
 
-/* =========================
-   DRAG
-========================= */
+
+// DRAG FUNKTION
 function makeDraggable(el) {
   let offsetX = 0, offsetY = 0;
   let isDragging = false;
 
   el.addEventListener('mousedown', (e) => {
-    if (e.target.classList.contains('btn-close')) return;
+    if(e.target.classList.contains('btn-close')) return; // ej drag på knapp
     isDragging = true;
     el.classList.add('dragging');
     offsetX = e.clientX - el.getBoundingClientRect().left;
     offsetY = e.clientY - el.getBoundingClientRect().top;
-    el.style.zIndex = 1000;
+    el.style.zIndex = 1000; // dra längst fram
   });
 
   document.addEventListener('mousemove', (e) => {
@@ -283,44 +298,67 @@ function makeDraggable(el) {
   });
 
   document.addEventListener('mouseup', () => {
-    if (isDragging) {
+    if(isDragging) {
       isDragging = false;
       el.classList.remove('dragging');
     }
   });
 }
 
-/* =========================
-   FIRST MODAL (AUTO AFTER 3s)
-========================= */
+/* document.addEventListener('mousemove', (e) => {
+  const ripple = document.createElement('div');
+  ripple.className = 'ripple';
+  ripple.style.left = e.clientX + 'px';
+  ripple.style.top = e.clientY + 'px';
+
+  document.body.appendChild(ripple);
+
+  setTimeout(() => {
+    ripple.remove();
+  }, 1000);
+});
+*/
+
 setTimeout(() => {
   createModal();
-}, 3000);
+}, 3000); // 3000 ms = 3 sekunder
 
-/* =========================
-   CURSOR TRAIL
-========================= */
-let lastTrailTime = 0;
-const trailInterval = 50;
+
+
+let lastTrailTime = 0; // för att skapa glesare trail
+const trailInterval = 50; // ms mellan varje ord (högre värde = glesare)
 
 document.addEventListener('mousemove', e => {
   const now = Date.now();
-  if (now - lastTrailTime < trailInterval) return;
+  if (now - lastTrailTime < trailInterval) return; // hoppa om det är för tätt
   lastTrailTime = now;
 
   const trail = document.createElement('div');
   trail.className = 'cursor-trail';
   trail.innerText = '404';
+
+  // Placera mitt på musen
   trail.style.left = e.clientX + 'px';
   trail.style.top = e.clientY + 'px';
 
   document.body.appendChild(trail);
 
-  setTimeout(() => trail.style.opacity = 0, 20);
-  setTimeout(() => trail.remove(), 1020);
-});
-</script>
+  // Starta fade
+  setTimeout(() => {
+    trail.style.opacity = 0;
+  }, 20);
 
+  // Ta bort trailen efter fade är klar
+  setTimeout(() => trail.remove(), 1020); // matchar 1s transition
+});
+
+
+
+
+
+
+
+</script>
 
 
 
