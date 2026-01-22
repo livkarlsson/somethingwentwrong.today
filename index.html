@@ -179,10 +179,23 @@ const cancelSound = new Audio(
 );
 cancelSound.preload = "auto";
 
+    function playCancelSound() {
+  const sound = new Audio(
+    "https://somethingwentwrong.today/Windows_XP_Error_Sound.mp3"
+  );
+  sound.play();
+}
+
+
     document.addEventListener('click', () => {
   cancelSound.currentTime = 0;
-  cancelSound.play().catch(() => {});
-}, { once: true });
+  function playCancelSound() {
+  const sound = new Audio(
+    "https://somethingwentwrong.today/Windows_XP_Error_Sound.mp3"
+  );
+  sound.play();
+}
+
 
     
 
@@ -221,7 +234,13 @@ function createModal() {
   modalCount++;
 
   cancelSound.currentTime = 0;
-  cancelSound.play().catch(() => {});
+  function playCancelSound() {
+  const sound = new Audio(
+    "https://somethingwentwrong.today/Windows_XP_Error_Sound.mp3"
+  );
+  sound.play();
+}
+
 
 
 
@@ -264,7 +283,13 @@ modal.style.background = randomColor;
   e.stopPropagation();
 
   cancelSound.currentTime = 0;
-  cancelSound.play();
+  function playCancelSound() {
+  const sound = new Audio(
+    "https://somethingwentwrong.today/Windows_XP_Error_Sound.mp3"
+  );
+  sound.play();
+}
+
 
   createModal();
 });
